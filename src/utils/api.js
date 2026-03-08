@@ -76,3 +76,10 @@ export const updateGameName = (gameName) => {
         gameName
     })
 }
+//resetPassword
+export const resetPassword = (username, adminSecretKey) => {
+    return request('post', 'admin/resetPassword', {
+        username,
+        adminSecretKey
+    })
+}

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getToken, removeToken } from './auth.js'
+import { getToken, removeToken, removeAdminKey } from './auth.js'
 
 // 创建axios实例
 const service = axios.create({
@@ -18,9 +18,17 @@ service.interceptors.response.use(
   error => {
     // 处理401未授权
     if (error.response && error.response.status === 401) {
-      // 清除token
+      const message = error.response.data?.message
+      
+      // 检查是否是无效的管理员密钥
+      if (message === '无效的管理员密钥') {
+        removeAdminKey()
+        window.location.href = '#/managerLogin'
+        return Promise.reject(new Error(message))
+      }
+      
+      // 否则是普通的登录会话过期
       removeToken()
-      // 跳转到登录页面
       window.location.href = '#/login'
       return Promise.reject(new Error('登录会话已被销毁，请重新登录'))
     }

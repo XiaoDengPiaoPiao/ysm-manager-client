@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 
 const tokenRef = ref(localStorage.getItem('token'))
 const usernameRef = ref(localStorage.getItem('username') || '')
+const adminKeyRef = ref(localStorage.getItem('adminKey') || '')
 
 export const isLogin = computed(() => !!tokenRef.value)
 
@@ -24,6 +25,19 @@ export const removeToken = () => {
   localStorage.removeItem('token')
   usernameRef.value = ''
   localStorage.removeItem('username')
+  removeAdminKey()
+}
+
+export const getAdminKey = () => adminKeyRef.value
+
+export const setAdminKey = (key) => {
+  adminKeyRef.value = key
+  localStorage.setItem('adminKey', key)
+}
+
+export const removeAdminKey = () => {
+  adminKeyRef.value = ''
+  localStorage.removeItem('adminKey')
 }
 
 export const useAuth = () => {
@@ -31,10 +45,14 @@ export const useAuth = () => {
     isLogin,
     token: tokenRef,
     username: usernameRef,
+    adminKey: adminKeyRef,
     getToken,
     setToken,
     getUsername,
     setUsername,
-    removeToken
+    removeToken,
+    getAdminKey,
+    setAdminKey,
+    removeAdminKey
   }
 }

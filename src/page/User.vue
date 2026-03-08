@@ -1,18 +1,10 @@
 <template>
   <div class="user-page">
-    <div class="page-header">
-      <h1>用户中心</h1>
-      <p class="subtitle">管理您的个人信息</p>
-    </div>
+    <PageHeader title="用户中心" subtitle="管理您的个人信息" />
 
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>加载中...</p>
-    </div>
+    <LoadingSpinner v-if="loading" text="加载中..." />
 
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+    <ErrorMessage v-if="errorMessage" :message="errorMessage" />
 
     <div v-else-if="userInfo" class="user-content">
       <div class="profile-section">
@@ -101,9 +93,18 @@
 
 <script>
 import { getUserInfo, updateGameName } from '../utils/api.js'
+import { formatDate } from '../utils/utils.js'
+import PageHeader from '../components/PageHeader.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import ErrorMessage from '../components/ErrorMessage.vue'
 
 export default {
   name: 'User',
+  components: {
+    PageHeader,
+    LoadingSpinner,
+    ErrorMessage
+  },
   data() {
     return {
       userInfo: null,
@@ -120,10 +121,7 @@ export default {
     this.fetchUserInfo()
   },
   methods: {
-    formatDate(dateStr) {
-      const date = new Date(dateStr)
-      return date.toLocaleString('zh-CN')
-    },
+    formatDate,
     
     async fetchUserInfo() {
       this.loading = true
@@ -199,52 +197,9 @@ export default {
   max-width: 1000px;
 }
 
-.page-header {
-  margin-bottom: 32px;
-}
 
-.page-header h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
 
-.subtitle {
-  color: #909399;
-  font-size: 14px;
-}
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f0f0f0;
-  border-top-color: #409eff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-message {
-  padding: 16px 20px;
-  background-color: #fef0f0;
-  border: 1px solid #fde2e2;
-  color: #f56c6c;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
 
 .user-content {
   display: flex;

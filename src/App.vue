@@ -1,21 +1,30 @@
 <script>
-import { isLogin, removeToken, getUsername } from './utils/auth.js'
+import { isLogin, removeToken, getUsername, getAdminKey } from './utils/auth.js'
 import { logout } from './utils/api.js'
 
 export default {
   data() {
     return {
       isLogin,
-      username: ''
+      username: '',
+      adminKey: ''
     }
   },
   mounted() {
     this.username = getUsername()
+    this.adminKey = getAdminKey()
   },
   watch: {
     isLogin: {
       handler() {
         this.username = getUsername()
+        this.adminKey = getAdminKey()
+      },
+      immediate: true
+    },
+    $route: {
+      handler() {
+        this.adminKey = getAdminKey()
       },
       immediate: true
     }
@@ -68,6 +77,26 @@ export default {
         >
           <span>👤</span>
           <span>{{ username }}</span>
+        </router-link>
+        
+        <router-link 
+          v-if="isLogin && username === 'nullname' && adminKey" 
+          to="/manager" 
+          class="nav-item"
+          active-class="active"
+        >
+          <span>⚙️</span>
+          <span>管理后台</span>
+        </router-link>
+        
+        <router-link 
+          v-if="isLogin && username === 'nullname' && !adminKey" 
+          to="/managerLogin" 
+          class="nav-item"
+          active-class="active"
+        >
+          <span>🔑</span>
+          <span>管理员登录</span>
         </router-link>
         
         <template v-if="!isLogin">

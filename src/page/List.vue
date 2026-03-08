@@ -1,9 +1,6 @@
 <template>
   <div class="list-page">
-    <div class="page-header">
-      <h1>模型列表</h1>
-      <p class="subtitle">查看和管理您的模型</p>
-    </div>
+    <PageHeader title="模型列表" subtitle="查看和管理您的模型" />
     
     <div class="tabs-container">
       <button 
@@ -29,14 +26,9 @@
       </button>
     </div>
 
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>加载中...</p>
-    </div>
+    <LoadingSpinner v-if="loading" text="加载中..." />
 
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+    <ErrorMessage v-if="errorMessage" :message="errorMessage" />
 
     <div v-if="!loading && models.length === 0 && !errorMessage" class="empty-state">
       <div class="empty-icon">📭</div>
@@ -130,9 +122,18 @@ import {
   deauthorizeModel as apiDeauthorizeModel,
   deleteAuthModel as apiDeleteAuthModel
 } from '../utils/api.js'
+import { formatDate } from '../utils/utils.js'
+import PageHeader from '../components/PageHeader.vue'
+import LoadingSpinner from '../components/LoadingSpinner.vue'
+import ErrorMessage from '../components/ErrorMessage.vue'
 
 export default {
   name: 'List',
+  components: {
+    PageHeader,
+    LoadingSpinner,
+    ErrorMessage
+  },
   data() {
     return {
       currentTab: 'all',
@@ -158,10 +159,7 @@ export default {
     this.fetchAllModels()
   },
   methods: {
-    formatDate(dateStr) {
-      const date = new Date(dateStr)
-      return date.toLocaleString('zh-CN')
-    },
+    formatDate,
     
     async fetchAllModels() {
       this.currentTab = 'all'
@@ -291,22 +289,6 @@ export default {
   width: 100%;
 }
 
-.page-header {
-  margin-bottom: 32px;
-}
-
-.page-header h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.subtitle {
-  color: #909399;
-  font-size: 14px;
-}
-
 .tabs-container {
   display: flex;
   gap: 12px;
@@ -345,37 +327,6 @@ export default {
   background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f0f0f0;
-  border-top-color: #409eff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-message {
-  padding: 16px 20px;
-  background-color: #fef0f0;
-  border: 1px solid #fde2e2;
-  color: #f56c6c;
-  border-radius: 8px;
-  margin-bottom: 20px;
 }
 
 .empty-state {

@@ -1,10 +1,12 @@
 <script>
 import { removeToken, isLogin } from '../utils/auth.js'
 import ModelUpload from '../components/modelUpload.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 export default {
     components: {
-        ModelUpload
+        ModelUpload,
+        PageHeader
     },
     data() {
         return {
@@ -28,10 +30,7 @@ export default {
 
 <template>
     <div class="home">
-        <div class="page-header">
-            <h1>模型上传</h1>
-            <p class="subtitle">选择上传公共模型或私人模型</p>
-        </div>
+        <PageHeader title="模型上传" subtitle="选择上传公共模型或私人模型" />
         
         <div class="cards-container">
             <div 
@@ -82,21 +81,7 @@ export default {
     max-width: 1000px;
 }
 
-.page-header {
-    margin-bottom: 40px;
-}
 
-.page-header h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 8px;
-}
-
-.subtitle {
-    color: #909399;
-    font-size: 14px;
-}
 
 .cards-container {
     display: grid;
