@@ -57,6 +57,8 @@ export const requestAuth = (method, url, data = {}) => {
     if (!token) {
         throw new Error('No token found')
     }
+    // DATA深拷贝
+    data = JSON.parse(JSON.stringify(data))
     return service({
         headers: {
           'Authorization': `Bearer ${token}`
@@ -78,8 +80,6 @@ export const requestFormData = (method, url, data = null) => {
     if (!token) {
         throw new Error('No token found')
     }
-    // DATA深拷贝
-    data = JSON.parse(JSON.stringify(data))
     return service({
         headers: {
             'Content-Type': 'multipart/form-data',

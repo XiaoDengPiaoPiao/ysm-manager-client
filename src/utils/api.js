@@ -22,14 +22,14 @@ export const logout = () => {
 
 
 export const hashVerify = (hash,type) => {
-    return requestAuth('post', 'user/hashVerification', {
+    return requestAuth('post', 'ysm/hashVerification', {
         hash,
         type
     })
 }
 //customModel
 export const customModel = (file) => {
-    return requestFormData('post', 'ysm/customModel', file)
+    return requestFormData('post', 'ysm/custom', file)
 }
 //authModel
 export const authModel = (file) => {
