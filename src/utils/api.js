@@ -35,3 +35,44 @@ export const customModel = (file) => {
 export const authModel = (file) => {
     return requestFormData('post', 'ysm/auth', file)
 }
+//authModelList
+export const getAuthModel = () => {
+    return requestAuth('get', 'user/models/auth')
+}
+
+
+//customModelList
+export const getCustomModel = () => {
+    return requestAuth('get', 'user/models/custom')
+}
+//authModelList
+export const getAuthModelList = () => {
+    return requestAuth('get', 'user/models/auth')
+}
+//allModelList
+export const getAllModel = () => {
+    return requestAuth('get', 'user/models/all')
+}
+
+//authorizeModel
+export const authorizeModel = (id) => {
+    return requestAuth('post', `ysm/auth/${id}`)
+}
+//deauthorizeModel
+export const deauthorizeModel = (id) => {
+    return requestAuth('post', `ysm/deauth/${id}`)
+}
+//deleteAuthModel
+export const deleteAuthModel = (id) => {
+    return requestAuth('delete', `ysm/auth/${id}`)
+}
+//userinfo
+export const getUserInfo = () => {
+    return requestAuth('get', 'user/info')
+}
+//updateGameName
+export const updateGameName = (gameName) => {
+    return requestAuth('post', 'user/updateGameName', {
+        gameName
+    })
+}
