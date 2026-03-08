@@ -1,6 +1,6 @@
 <script>
 import { login } from '../utils/api.js'
-import { setToken, getToken } from '../utils/auth.js'
+import { setToken, getToken, setUsername } from '../utils/auth.js'
 
 export default {
     data() {
@@ -19,8 +19,9 @@ export default {
 
             try {
                 const response = await login(this.name, this.password)
-                // 登录成功，存储token
+                // 登录成功，存储token和用户名
                 setToken(response.data.token)
+                setUsername(this.name)
                 // 跳转到首页或其他页面
                 this.$router.push('/')
             } catch (err) {

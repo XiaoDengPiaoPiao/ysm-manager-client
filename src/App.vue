@@ -1,11 +1,23 @@
 <script>
-import { isLogin, removeToken } from './utils/auth.js'
+import { isLogin, removeToken, getUsername } from './utils/auth.js'
 import { logout } from './utils/api.js'
 
 export default {
   data() {
     return {
-      isLogin
+      isLogin,
+      username: ''
+    }
+  },
+  mounted() {
+    this.username = getUsername()
+  },
+  watch: {
+    isLogin: {
+      handler() {
+        this.username = getUsername()
+      },
+      immediate: true
     }
   },
   methods: {
@@ -35,6 +47,12 @@ export default {
       </li>
       <li v-if="isLogin">
         <router-link to="/">Home</router-link>
+      </li>
+      <li v-if="isLogin">
+        <router-link to="/list">List</router-link>
+      </li>
+      <li v-if="isLogin" class="username">
+        <router-link to="/user">{{ username }}</router-link>
       </li>
       <li v-if="isLogin">
         <button @click="handleLogout">Logout</button>
