@@ -49,6 +49,7 @@ export default {
     <aside class="sidebar">
       <div class="sidebar-header">
         <h2>YSM Manager</h2>
+        <span>version: 0.0.1</span>
       </div>
       <nav class="nav-menu">
         <router-link 
