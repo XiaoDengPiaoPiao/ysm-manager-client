@@ -40,6 +40,24 @@
               :loading="resetLoading"
             />
           </form>
+          
+          <div v-if="resetResult" class="reset-result-display">
+            <div class="info-section">
+              <h3>✅ 密码重置成功</h3>
+              <div class="info-item">
+                <span class="info-label">用户名：</span>
+                <span class="info-value">{{ resetResult.username }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">新密码：</span>
+                <span class="info-value new-password">{{ resetResult.newPassword }}</span>
+              </div>
+              <div class="warning-note">
+                <span>⚠️</span>
+                <span>请妥善保管新密码并尽快告知用户！</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="manager-card">
@@ -361,6 +379,7 @@ export default {
       resetLoading: false,
       resetError: '',
       resetSuccess: '',
+      resetResult: null,
       modelFileName: '',
       modelLoading: false,
       modelError: '',
@@ -402,9 +421,11 @@ export default {
       this.resetLoading = true
       this.resetError = ''
       this.resetSuccess = ''
+      this.resetResult = null
 
       try {
-        await resetPassword(this.username, this.adminKey)
+        const result = await resetPassword(this.username, this.adminKey)
+        this.resetResult = result.data
         this.resetSuccess = '密码重置成功！'
         this.username = ''
       } catch (err) {
@@ -705,5 +726,36 @@ export default {
   margin-top: 24px;
   padding-top: 24px;
   border-top: 2px dashed #e0e0e0;
+}
+
+.reset-result-display {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px dashed #e0e0e0;
+}
+
+.new-password {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #409eff;
+  background: #f0f9ff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px dashed #91d5ff;
+}
+
+.warning-note {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fdf6ec 0%, #faecd8 100%);
+  border-radius: 8px;
+  border: 1px solid #f5dab1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #e6a23c;
+  font-weight: 500;
 }
 </style>
