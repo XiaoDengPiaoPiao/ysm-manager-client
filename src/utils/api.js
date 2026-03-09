@@ -90,3 +90,15 @@ export const changePassword = (oldPassword, newPassword) => {
         newPassword
     })
 }
+
+export const getModelByFileName = (fileName, adminSecretKey) => {
+    return request('post', `admin/getmodel`, {
+        fileName,
+        adminSecretKey
+    })
+}
+export const deleteModel = (id, adminSecretKey) => {
+    return request('delete', `admin/delmodel/${id}`, {
+        adminSecretKey
+    })
+}
