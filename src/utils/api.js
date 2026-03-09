@@ -99,3 +99,25 @@ export const deleteModel = (id, adminSecretKey) => {
         adminSecretKey
     })
 }
+export const updateUserUploadLimit = (username, customUploadLimit, authUploadLimit, adminSecretKey) => {
+    const data = { username, adminSecretKey }
+    if (customUploadLimit !== undefined && customUploadLimit !== null) {
+        data.customUploadLimit = customUploadLimit
+    }
+    if (authUploadLimit !== undefined && authUploadLimit !== null) {
+        data.authUploadLimit = authUploadLimit
+    }
+    return request('post', 'admin/updateUploadLimit', data)
+}
+export const getUserInfoByUsername = (username, adminSecretKey) => {
+    return request('post', 'admin/getUserInfoByUsername', {
+        username,
+        adminSecretKey
+    })
+}
+export const getUserInfoByGameName = (gameName, adminSecretKey) => {
+    return request('post', 'admin/getUserInfoByGameName', {
+        gameName,
+        adminSecretKey
+    })
+}

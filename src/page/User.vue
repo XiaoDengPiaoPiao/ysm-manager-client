@@ -37,6 +37,47 @@
 
         <div class="info-card">
           <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">上传统计</span>
+          </div>
+          <div class="card-body">
+            <div class="upload-stats">
+              <div class="stat-item">
+                <div class="stat-label">公共模型</div>
+                <div class="stat-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill custom" 
+                      :style="{ width: getProgressPercent(userInfo.customUploaded, userInfo.customUploadLimit) + '%' }"
+                    ></div>
+                  </div>
+                  <div class="stat-text">
+                    {{ userInfo.customUploaded }} / {{ userInfo.customUploadLimit }}
+                    <span class="stat-remaining">(剩余 {{ userInfo.customRemaining }})</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">私人模型</div>
+                <div class="stat-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill auth" 
+                      :style="{ width: getProgressPercent(userInfo.authUploaded, userInfo.authUploadLimit) + '%' }"
+                    ></div>
+                  </div>
+                  <div class="stat-text">
+                    {{ userInfo.authUploaded }} / {{ userInfo.authUploadLimit }}
+                    <span class="stat-remaining">(剩余 {{ userInfo.authRemaining }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="card-header">
             <span class="card-icon">🎮</span>
             <span class="card-title">游戏名称绑定</span>
           </div>
@@ -181,6 +222,11 @@ export default {
   },
   methods: {
     formatDate,
+    
+    getProgressPercent(uploaded, limit) {
+      if (!limit) return 0
+      return Math.min((uploaded / limit) * 100, 100)
+    },
     
     async fetchUserInfo() {
       this.loading = true
@@ -635,6 +681,65 @@ export default {
 .action-desc {
   font-size: 13px;
   color: #909399;
+}
+
+.upload-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #f0f2f5;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.custom {
+  background: linear-gradient(90deg, #409eff 0%, #66b1ff 100%);
+}
+
+.progress-fill.auth {
+  background: linear-gradient(90deg, #67c23a 0%, #85ce61 100%);
+}
+
+.stat-text {
+  font-size: 14px;
+  color: #606266;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-remaining {
+  color: #909399;
+  font-size: 13px;
 }
 
 @media (max-width: 768px) {

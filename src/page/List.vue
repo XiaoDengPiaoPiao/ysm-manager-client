@@ -2,6 +2,29 @@
   <div class="list-page">
     <PageHeader title="模型列表" subtitle="查看和管理您的模型" />
     
+    <LoadingSpinner v-if="userInfoLoading" text="加载用户信息中..." />
+    
+    <div v-if="userInfo" class="upload-stats-section">
+      <div class="upload-stats-card">
+        <div class="stat-card">
+          <div class="stat-icon custom">🌐</div>
+          <div class="stat-content">
+            <div class="stat-title">公共模型</div>
+            <div class="stat-value">{{ userInfo.customUploaded }} / {{ userInfo.customUploadLimit }}</div>
+            <div class="stat-remaining">剩余 {{ userInfo.customRemaining }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon auth">🔒</div>
+          <div class="stat-content">
+            <div class="stat-title">私人模型</div>
+            <div class="stat-value">{{ userInfo.authUploaded }} / {{ userInfo.authUploadLimit }}</div>
+            <div class="stat-remaining">剩余 {{ userInfo.authRemaining }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <div class="tabs-container">
       <button 
         @click="fetchAllModels" 
@@ -120,7 +143,8 @@ import {
   getCustomModel,
   authorizeModel as apiAuthorizeModel,
   deauthorizeModel as apiDeauthorizeModel,
-  deleteAuthModel as apiDeleteAuthModel
+  deleteAuthModel as apiDeleteAuthModel,
+  getUserInfo
 } from '../utils/api.js'
 import { formatDate } from '../utils/utils.js'
 import PageHeader from '../components/PageHeader.vue'
@@ -142,7 +166,9 @@ export default {
       loadingActions: false,
       errorMessage: '',
       currentPage: 1,
-      pageSize: 8
+      pageSize: 8,
+      userInfo: null,
+      userInfoLoading: false
     }
   },
   computed: {
@@ -156,10 +182,24 @@ export default {
     }
   },
   mounted() {
+    this.fetchUserInfo()
     this.fetchAllModels()
   },
   methods: {
     formatDate,
+    
+    async fetchUserInfo() {
+      this.userInfoLoading = true
+      
+      try {
+        const response = await getUserInfo()
+        this.userInfo = response.data
+      } catch (err) {
+        console.error('获取用户信息失败:', err)
+      } finally {
+        this.userInfoLoading = false
+      }
+    },
     
     async fetchAllModels() {
       this.currentTab = 'all'
@@ -288,6 +328,75 @@ export default {
 .list-page {
   width: 100%;
 }
+
+.upload-stats-section {
+  margin-bottom: 32px;
+}
+
+.upload-stats-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.stat-icon.custom {
+  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+}
+
+.stat-icon.auth {
+  background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #303133;
+  margin-bottom: 4px;
+}
+
+.stat-remaining {
+  font-size: 13px;
+  color: #909399;
+}
+
 
 .tabs-container {
   display: flex;
