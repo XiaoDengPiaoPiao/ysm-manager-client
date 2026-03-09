@@ -216,7 +216,7 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.logout-btn {
+.sidebar-footer .logout-btn {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -231,11 +231,11 @@ body {
   font-size: 14px;
 }
 
-.logout-btn:hover {
+.sidebar-footer .logout-btn:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.logout-btn span:first-child {
+.sidebar-footer .logout-btn span:first-child {
   font-size: 18px;
 }
 

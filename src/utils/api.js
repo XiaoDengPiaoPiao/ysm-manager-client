@@ -83,3 +83,10 @@ export const resetPassword = (username, adminSecretKey) => {
         adminSecretKey
     })
 }
+//user/changePassword
+export const changePassword = (oldPassword, newPassword) => {
+    return requestAuth('post', 'user/changePassword', {
+        oldPassword,
+        newPassword
+    })
+}

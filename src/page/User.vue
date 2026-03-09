@@ -69,6 +69,66 @@
             </div>
           </div>
         </div>
+
+        <div class="info-card">
+          <div class="card-header">
+            <span class="card-icon">🔐</span>
+            <span class="card-title">修改密码</span>
+          </div>
+          <div class="card-body">
+            <div v-if="!isEditingPassword" class="password-view">
+              <div class="password-display">••••••••</div>
+              <button @click="startEditPassword" class="edit-btn">
+                <span>✏️</span>
+                <span>修改</span>
+              </button>
+            </div>
+            <div v-else class="password-edit">
+              <div class="form-group">
+                <label>当前密码</label>
+                <input 
+                  type="password" 
+                  v-model="oldPassword" 
+                  class="edit-input"
+                  placeholder="请输入当前密码"
+                  autocomplete="current-password"
+                >
+              </div>
+              <div class="form-group">
+                <label>新密码</label>
+                <input 
+                  type="password" 
+                  v-model="newPassword" 
+                  class="edit-input"
+                  placeholder="请输入新密码 (至少6位)"
+                  minlength="6"
+                  autocomplete="new-password"
+                >
+              </div>
+              <div class="form-group">
+                <label>确认新密码</label>
+                <input 
+                  type="password" 
+                  v-model="confirmPassword" 
+                  class="edit-input"
+                  placeholder="请再次输入新密码"
+                  minlength="6"
+                  autocomplete="new-password"
+                >
+              </div>
+              <div class="edit-actions">
+                <button @click="savePassword" class="save-btn" :disabled="changingPassword">
+                  <span>💾</span>
+                  <span>{{ changingPassword ? '修改中...' : '保存' }}</span>
+                </button>
+                <button @click="cancelEditPassword" class="cancel-btn" :disabled="changingPassword">
+                  <span>❌</span>
+                  <span>取消</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="updateMessage" :class="['update-message', updateMessageType]">
@@ -92,7 +152,7 @@
 </template>
 
 <script>
-import { getUserInfo, updateGameName } from '../utils/api.js'
+import { getUserInfo, updateGameName, changePassword } from '../utils/api.js'
 import { formatDate } from '../utils/utils.js'
 import PageHeader from '../components/PageHeader.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
@@ -114,7 +174,12 @@ export default {
       editingGameName: '',
       saving: false,
       updateMessage: '',
-      updateMessageType: ''
+      updateMessageType: '',
+      isEditingPassword: false,
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      changingPassword: false
     }
   },
   mounted() {
@@ -147,6 +212,76 @@ export default {
       this.isEditing = false
       this.editingGameName = ''
       this.updateMessage = ''
+    },
+    
+    startEditPassword() {
+      this.isEditingPassword = true
+      this.oldPassword = ''
+      this.newPassword = ''
+      this.confirmPassword = ''
+      this.updateMessage = ''
+    },
+    
+    cancelEditPassword() {
+      this.isEditingPassword = false
+      this.oldPassword = ''
+      this.newPassword = ''
+      this.confirmPassword = ''
+      this.updateMessage = ''
+    },
+    
+    async savePassword() {
+      if (!this.oldPassword.trim()) {
+        this.updateMessage = '请输入当前密码'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      if (!this.newPassword.trim()) {
+        this.updateMessage = '请输入新密码'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      if (this.newPassword.length < 6) {
+        this.updateMessage = '新密码至少6位'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      if (this.newPassword !== this.confirmPassword) {
+        this.updateMessage = '两次输入的密码不一致'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      if (this.oldPassword === this.newPassword) {
+        this.updateMessage = '新密码不能与原密码相同'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      this.changingPassword = true
+      this.updateMessage = ''
+      
+      try {
+        await changePassword(this.oldPassword, this.newPassword)
+        this.isEditingPassword = false
+        this.oldPassword = ''
+        this.newPassword = ''
+        this.confirmPassword = ''
+        this.updateMessage = '密码修改成功'
+        this.updateMessageType = 'success'
+        
+        setTimeout(() => {
+          this.updateMessage = ''
+        }, 3000)
+      } catch (err) {
+        this.updateMessage = err.message || '密码修改失败'
+        this.updateMessageType = 'error'
+      } finally {
+        this.changingPassword = false
+      }
     },
     
     async saveGameName() {
@@ -303,14 +438,16 @@ export default {
   font-weight: 500;
 }
 
-.game-name-view {
+.game-name-view,
+.password-view {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-.game-name-display {
+.game-name-display,
+.password-display {
   flex: 1;
   font-size: 18px;
   font-weight: 600;
@@ -338,10 +475,23 @@ export default {
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
-.game-name-edit {
+.game-name-edit,
+.password-edit {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #606266;
 }
 
 .edit-input {
