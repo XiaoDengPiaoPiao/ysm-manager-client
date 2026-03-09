@@ -8,11 +8,10 @@ export const login = (name, password) => {
     })
 }
 //register
-export const register = (name, password, gameName) => {
+export const register = (name, password) => {
     return request('post', 'user/register', {
         name,
-        password,
-        gameName
+        password
     })
 }
 //logout
@@ -71,10 +70,8 @@ export const getUserInfo = () => {
     return requestAuth('get', 'user/info')
 }
 //updateGameName
-export const updateGameName = (gameName) => {
-    return requestAuth('post', 'user/updateGameName', {
-        gameName
-    })
+export const updateGameName = () => {
+    return requestAuth('post', 'user/updateGameName')
 }
 //resetPassword
 export const resetPassword = (username, adminSecretKey) => {

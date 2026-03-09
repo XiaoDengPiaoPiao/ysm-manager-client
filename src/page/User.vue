@@ -38,33 +38,27 @@
         <div class="info-card">
           <div class="card-header">
             <span class="card-icon">🎮</span>
-            <span class="card-title">游戏名称</span>
+            <span class="card-title">游戏名称绑定</span>
           </div>
           <div class="card-body">
-            <div v-if="!isEditing" class="game-name-view">
-              <div class="game-name-display">{{ userInfo.gameName }}</div>
-              <button @click="startEdit" class="edit-btn">
-                <span>✏️</span>
-                <span>编辑</span>
+            <div v-if="!isGeneratingToken" class="game-name-view">
+              <div class="game-name-display">{{ userInfo.gameName || '未绑定' }}</div>
+              <button @click="generateBindToken" class="edit-btn">
+                <span>🔗</span>
+                <span>生成绑定码</span>
               </button>
             </div>
-            <div v-else class="game-name-edit">
-              <input 
-                type="text" 
-                v-model="editingGameName" 
-                class="edit-input"
-                placeholder="请输入新的游戏名称"
-                maxlength="30"
-              >
-              <div class="edit-actions">
-                <button @click="saveGameName" class="save-btn" :disabled="saving">
-                  <span>💾</span>
-                  <span>{{ saving ? '保存中...' : '保存' }}</span>
-                </button>
-                <button @click="cancelEdit" class="cancel-btn" :disabled="saving">
-                  <span>❌</span>
-                  <span>取消</span>
-                </button>
+            <div v-if="bindTokenData" class="bind-token-section">
+              <div class="message-display">{{ bindTokenMessage }}</div>
+              <div class="bind-command-wrapper">
+                <div class="bind-command-label">绑定指令：</div>
+                <div class="bind-command-box">
+                  <code class="bind-command">{{ bindTokenData.bindCommand }}</code>
+                </div>
+              </div>
+              <div class="expire-info">
+                <span>⏰</span>
+                <span>过期时间：{{ formatDate(bindTokenData.expiresAt) }}</span>
               </div>
             </div>
           </div>
@@ -170,16 +164,16 @@ export default {
       userInfo: null,
       loading: false,
       errorMessage: '',
-      isEditing: false,
-      editingGameName: '',
-      saving: false,
       updateMessage: '',
       updateMessageType: '',
       isEditingPassword: false,
       oldPassword: '',
       newPassword: '',
       confirmPassword: '',
-      changingPassword: false
+      changingPassword: false,
+      isGeneratingToken: false,
+      bindTokenData: null,
+      bindTokenMessage: ''
     }
   },
   mounted() {
@@ -200,18 +194,6 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    
-    startEdit() {
-      this.editingGameName = this.userInfo.gameName
-      this.isEditing = true
-      this.updateMessage = ''
-    },
-    
-    cancelEdit() {
-      this.isEditing = false
-      this.editingGameName = ''
-      this.updateMessage = ''
     },
     
     startEditPassword() {
@@ -284,43 +266,21 @@ export default {
       }
     },
     
-    async saveGameName() {
-      if (!this.editingGameName.trim()) {
-        this.updateMessage = '游戏名称不能为空'
-        this.updateMessageType = 'error'
-        return
-      }
-      
-      if (this.editingGameName === this.userInfo.gameName) {
-        this.updateMessage = '游戏名称未修改'
-        this.updateMessageType = 'warning'
-        return
-      }
-      
-      if (this.editingGameName.length < 3) {
-        this.updateMessage = '游戏名称至少3个字符'
-        this.updateMessageType = 'error'
-        return
-      }
-      
-      this.saving = true
+    async generateBindToken() {
+      this.isGeneratingToken = true
       this.updateMessage = ''
+      this.bindTokenData = null
+      this.bindTokenMessage = ''
       
       try {
-        const response = await updateGameName(this.editingGameName)
-        this.userInfo.gameName = response.data.gameName
-        this.isEditing = false
-        this.updateMessage = '游戏名称更新成功'
-        this.updateMessageType = 'success'
-        
-        setTimeout(() => {
-          this.updateMessage = ''
-        }, 3000)
+        const response = await updateGameName()
+        this.bindTokenData = response.data
+        this.bindTokenMessage = response.message
       } catch (err) {
-        this.updateMessage = err.message || '更新失败'
+        this.updateMessage = err.message || '生成绑定码失败'
         this.updateMessageType = 'error'
       } finally {
-        this.saving = false
+        this.isGeneratingToken = false
       }
     }
   }
@@ -453,6 +413,60 @@ export default {
   font-weight: 600;
   color: #303133;
   word-break: break-all;
+}
+
+.bind-token-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+  border-radius: 12px;
+  border: 1px solid #91d5ff;
+}
+
+.message-display {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1890ff;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bind-command-wrapper {
+  margin-bottom: 12px;
+}
+
+.bind-command-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.bind-command-box {
+  background: #1e1e1e;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.bind-command {
+  display: block;
+  width: 100%;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  color: #4ec9b0;
+  word-break: break-all;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.expire-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #909399;
 }
 
 .edit-btn {

@@ -17,7 +17,6 @@ export default {
     return {
       name: '',
       password: '',
-      gameName: '',
       loading: false,
       error: ''
     }
@@ -29,7 +28,7 @@ export default {
       this.error = ''
 
       try {
-        await register(this.name, this.password, this.gameName)
+        await register(this.name, this.password)
         this.$router.push('/login')
       } catch (err) {
         this.error = err.message || '注册失败，但后端没有返回错误'
@@ -71,18 +70,6 @@ export default {
         placeholder="请输入密码 (至少6位)"
         :minlength="6"
         autocomplete="new-password"
-        theme="green"
-      />
-      <FormInput 
-        id="gameName"
-        label="游戏名称"
-        type="text"
-        v-model="gameName"
-        :required="true"
-        placeholder="请输入游戏名称 (3-30个字符)"
-        :minlength="3"
-        :maxlength="30"
-        autocomplete="off"
         theme="green"
       />
       <ErrorMessage v-if="error" :message="error" />
