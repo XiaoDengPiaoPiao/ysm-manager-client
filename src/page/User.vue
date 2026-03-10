@@ -82,24 +82,63 @@
             <span class="card-title">游戏名称绑定</span>
           </div>
           <div class="card-body">
-            <div v-if="!isGeneratingToken" class="game-name-view">
-              <div class="game-name-display">{{ userInfo.gameName || '未绑定' }}</div>
-              <button @click="generateBindToken" class="edit-btn">
+            <div v-if="userInfo.gameName && !isBinding" class="game-name-view">
+              <div class="game-name-display">{{ userInfo.gameName }}</div>
+              <button @click="startBinding" class="edit-btn">
                 <span>🔗</span>
-                <span>生成绑定码</span>
+                <span>重新绑定</span>
               </button>
             </div>
-            <div v-if="bindTokenData" class="bind-token-section">
-              <div class="message-display">{{ bindTokenMessage }}</div>
-              <div class="bind-command-wrapper">
-                <div class="bind-command-label">绑定指令：</div>
-                <div class="bind-command-box">
-                  <code class="bind-command">{{ bindTokenData.bindCommand }}</code>
-                </div>
+            <div v-else-if="!userInfo.gameName && !isBinding" class="game-name-view">
+              <div class="game-name-display">未绑定</div>
+              <button @click="startBinding" class="edit-btn">
+                <span>🔗</span>
+                <span>立即绑定</span>
+              </button>
+            </div>
+            <div v-if="isBinding" class="bind-form">
+              <div class="form-group">
+                <label>游戏名称</label>
+                <input 
+                  type="text" 
+                  v-model="gameNameInput" 
+                  class="edit-input"
+                  placeholder="请输入您的游戏名称"
+                  autocomplete="off"
+                >
               </div>
-              <div class="expire-info">
-                <span>⏰</span>
-                <span>过期时间：{{ formatDate(bindTokenData.expiresAt) }}</span>
+              <div class="code-input-group">
+                <div class="form-group">
+                  <label>验证码</label>
+                  <input 
+                    type="text" 
+                    v-model="verificationCodeInput" 
+                    class="edit-input"
+                    placeholder="请输入验证码"
+                    autocomplete="off"
+                  >
+                </div>
+                <button 
+                  @click="sendVerificationCode" 
+                  class="send-code-btn"
+                  :disabled="sendingCode || countdown > 0 || !gameNameInput.trim()"
+                >
+                  {{ countdown > 0 ? `${countdown}s` : (sendingCode ? '发送中...' : '发送验证码') }}
+                </button>
+              </div>
+              <ErrorMessage v-if="bindMessage && updateMessageType === 'error'" :message="bindMessage" />
+              <div v-if="bindMessage && updateMessageType === 'success'" class="success-message">
+                {{ bindMessage }}
+              </div>
+              <div class="edit-actions">
+                <button @click="verifyCode" class="save-btn" :disabled="verifyingCode || !gameNameInput.trim() || !verificationCodeInput.trim()">
+                  <span>✅</span>
+                  <span>{{ verifyingCode ? '验证中...' : '确认绑定' }}</span>
+                </button>
+                <button @click="cancelBinding" class="cancel-btn" :disabled="verifyingCode || sendingCode">
+                  <span>❌</span>
+                  <span>取消</span>
+                </button>
               </div>
             </div>
           </div>
@@ -187,7 +226,7 @@
 </template>
 
 <script>
-import { getUserInfo, updateGameName, changePassword } from '../utils/api.js'
+import { getUserInfo, updateGameName, verifyGameName, changePassword } from '../utils/api.js'
 import { formatDate } from '../utils/utils.js'
 import PageHeader from '../components/PageHeader.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
@@ -212,9 +251,14 @@ export default {
       newPassword: '',
       confirmPassword: '',
       changingPassword: false,
-      isGeneratingToken: false,
-      bindTokenData: null,
-      bindTokenMessage: ''
+      isBinding: false,
+      gameNameInput: '',
+      verificationCodeInput: '',
+      sendingCode: false,
+      verifyingCode: false,
+      bindToken: null,
+      bindMessage: '',
+      countdown: 0
     }
   },
   mounted() {
@@ -312,21 +356,98 @@ export default {
       }
     },
     
-    async generateBindToken() {
-      this.isGeneratingToken = true
-      this.updateMessage = ''
-      this.bindTokenData = null
-      this.bindTokenMessage = ''
+    startBinding() {
+      this.isBinding = true
+      this.gameNameInput = ''
+      this.verificationCodeInput = ''
+      this.bindMessage = ''
+      this.updateMessageType = ''
+      this.bindToken = null
+      this.countdown = 0
+    },
+    
+    cancelBinding() {
+      this.isBinding = false
+      this.gameNameInput = ''
+      this.verificationCodeInput = ''
+      this.bindMessage = ''
+      this.updateMessageType = ''
+      this.bindToken = null
+      this.countdown = 0
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer)
+      }
+    },
+    
+    async sendVerificationCode() {
+      if (!this.gameNameInput.trim()) {
+        this.bindMessage = '请先输入游戏名称'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      this.sendingCode = true
+      this.bindMessage = ''
+      this.updateMessageType = ''
       
       try {
-        const response = await updateGameName()
-        this.bindTokenData = response.data
-        this.bindTokenMessage = response.message
+        const response = await updateGameName(this.gameNameInput)
+        this.bindToken = response.data.token
+        this.bindMessage = response.message
+        this.updateMessageType = 'success'
+        this.startCountdown()
       } catch (err) {
-        this.updateMessage = err.message || '生成绑定码失败'
+        this.bindMessage = err.message || '发送验证码失败'
         this.updateMessageType = 'error'
       } finally {
-        this.isGeneratingToken = false
+        this.sendingCode = false
+      }
+    },
+    
+    startCountdown() {
+      this.countdown = 60
+      this.countdownTimer = setInterval(() => {
+        this.countdown--
+        if (this.countdown <= 0) {
+          clearInterval(this.countdownTimer)
+        }
+      }, 1000)
+    },
+    
+    async verifyCode() {
+      if (!this.gameNameInput.trim()) {
+        this.bindMessage = '请输入游戏名称'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      if (!this.verificationCodeInput.trim()) {
+        this.bindMessage = '请输入验证码'
+        this.updateMessageType = 'error'
+        return
+      }
+      
+      this.verifyingCode = true
+      
+      try {
+        await verifyGameName(this.gameNameInput, this.verificationCodeInput)
+        this.bindMessage = '绑定成功！'
+        this.updateMessageType = 'success'
+        
+        setTimeout(() => {
+          this.isBinding = false
+          this.gameNameInput = ''
+          this.verificationCodeInput = ''
+          this.bindMessage = ''
+          this.updateMessageType = ''
+          this.bindToken = null
+          this.fetchUserInfo()
+        }, 1500)
+      } catch (err) {
+        this.bindMessage = err.message || '验证失败，请检查验证码是否正确'
+        this.updateMessageType = 'error'
+      } finally {
+        this.verifyingCode = false
       }
     }
   }
@@ -742,9 +863,67 @@ export default {
   font-size: 13px;
 }
 
+.bind-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.code-input-group {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.code-input-group .form-group {
+  flex: 1;
+}
+
+.send-code-btn {
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.send-code-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.send-code-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success-message {
+  padding: 12px 16px;
+  background-color: #f0f9ff;
+  border: 1px solid #e1f3d8;
+  color: #67c23a;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .info-cards {
     grid-template-columns: 1fr;
+  }
+  
+  .code-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .send-code-btn {
+    width: 100%;
   }
 }
 </style>

@@ -70,8 +70,17 @@ export const getUserInfo = () => {
     return requestAuth('get', 'user/info')
 }
 //updateGameName
-export const updateGameName = () => {
-    return requestAuth('post', 'user/updateGameName')
+export const updateGameName = (gameName) => {
+    return requestAuth('post', 'user/updateGameName', {
+        gameName
+    })
+}
+//verifyGameName
+export const verifyGameName = (gameName,verificationCode) => {
+    return requestAuth('post', 'user/verifyGameName', {
+        gameName,
+        verificationCode
+    })
 }
 //resetPassword
 export const resetPassword = (username, adminSecretKey) => {
